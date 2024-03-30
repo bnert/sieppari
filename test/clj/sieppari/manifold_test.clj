@@ -228,3 +228,45 @@
                [:error :c]
                [:error :b]
                [:leave :a]])))
+
+(def ^:dynamic *boundv* 41)
+
+(defn bindings-handler [_]
+  (is (= 43 *boundv*))
+  (d/chain
+    nil
+    (fn [_]
+      *boundv*)))
+
+(def bindings-chain
+  [{:enter (fn [ctx]
+             (d/future
+               (assoc ctx
+                      :bindings
+                      {#'*boundv* 42})))
+    :leave (fn [ctx]
+             (d/chain
+               ctx
+               (fn [ctx']
+                 (is (= 42 *boundv*))
+                 ctx')))}
+   {:enter (fn [ctx]
+             (is (= 42 *boundv*)
+                  "In interceptor failed")
+             (d/chain
+               ctx
+               #(update-in
+                  %
+                  [:bindings #'*boundv*] inc)))
+    :leave (fn [ctx]
+             (d/chain
+               ctx
+               #(update-in
+                  %
+                  [:bindings #'*boundv*] dec)))}
+   bindings-handler])
+
+(deftest async-bindings-test
+  (fact "bindings are conveyed across interceptor chain"
+    (sc/execute bindings-chain {}) => 43))
+

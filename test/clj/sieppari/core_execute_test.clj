@@ -269,6 +269,26 @@
         [:leave :x]
         [:leave :a]]))
 
+
+(def ^:dynamic *boundv* 41)
+
+(defn bindings-handler [_]
+  (is (= 42 *boundv*))
+  *boundv*)
+
+(def bindings-chain
+  [{:enter (fn [ctx] (assoc ctx
+                            :bindings
+                            {#'*boundv* 42}))}
+   {:enter (fn [ctx]
+             (is (= 42 *boundv*))
+             ctx)}
+   bindings-handler])
+
+(deftest use-bindings-test
+  (fact "bindings are conveyed across interceptor chain"
+    (s/execute bindings-chain {}) => 42))
+
 ; TODO: figure out how enqueue should work? Should enqueue add interceptors just
 ; before the handler?
 #_(deftest enqueue-interceptor-test

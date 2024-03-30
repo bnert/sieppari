@@ -8,7 +8,7 @@
   (is (as/async? (p/promise 1))))
 
 #?(:clj
-   (deftest core-async-continue-cljs-callback-test
+   (deftest core-async-continue-clj-callback-test
      (let [respond (promise)
            p (p/create
                (fn [resolve _]
@@ -26,7 +26,7 @@
                               (done))))))))
 
 #?(:clj
-   (deftest core-async-catch-cljs-callback-test
+   (deftest core-async-catch-clj-callback-test
      (let [respond (promise)
            p (p/create
                (fn [_ reject]

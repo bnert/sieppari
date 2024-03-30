@@ -12,3 +12,5 @@ pom.xml.asc
 /.lumo_cache/
 .idea/
 *.iml
+.clj-kondo/.cache/
+.lsp/

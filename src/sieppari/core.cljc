@@ -14,10 +14,17 @@
   c/Context
   (context? [_] true))
 
+
 (defn- -try [ctx f]
   (if f
     (try
-      (let [ctx* (f ctx)]
+      (let [ctx* #?(:clj (with-bindings (or (:bindings ctx) {})
+                           ; Given the various async
+                           ; executors may exec on different threads,
+                           ; the fn must be bound in order to preserve
+                           ; bindings
+                           ((bound-fn* f) ctx))
+                    :cljs (f ctx))]
         (if (a/async? ctx*)
           (a/catch ctx* (fn [e] (assoc ctx :error e)))
           ctx*))
@@ -79,7 +86,7 @@
       (callback result))))
 
 (defn- remove-context-keys [ctx]
-  (dissoc ctx :error :queue :stack))
+  (dissoc ctx :bindings :error :queue :stack))
 
 ;;
 ;; Public API:
